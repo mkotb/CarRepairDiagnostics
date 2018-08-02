@@ -3,8 +3,12 @@ package com.ubiquisoft.evaluation.domain;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -17,22 +21,27 @@ public class Car {
 	private List<Part> parts;
 
 	public Map<PartType, Integer> getMissingPartsMap() {
-		/*
-		 * Return map of the part types missing.
-		 *
-		 * Each car requires one of each of the following types:
-		 *      ENGINE, ELECTRICAL, FUEL_FILTER, OIL_FILTER
-		 * and four of the type: TIRE
-		 *
-		 * Example: a car only missing three of the four tires should return a map like this:
-		 *
-		 *      {
-		 *          "TIRE": 3
-		 *      }
-		 */
+	    // categorize our parts by their type
+		Map<PartType, List<Part>> categorized = parts.stream().collect(Collectors.groupingBy(Part::getType));
 
-		return null;
+		// go through all possible types
+		return Stream.of(PartType.values())
+                // get their expected amount and subtract the amount of parts we have from that
+                .map((type) -> new SimpleEntry<>(
+                        type,
+                        type.getAmount() - categorized.getOrDefault(type, Collections.emptyList()).size()
+                ))
+                // only account for real differences
+                .filter((entry) -> entry.getValue() > 0)
+                // collect it as a map
+                .collect(Collectors.toMap(SimpleEntry::getKey, SimpleEntry::getValue));
 	}
+
+	public List<Part> getDamagedParts() {
+	    return parts.stream()
+                .filter((p) -> !p.isInWorkingCondition())
+                .collect(Collectors.toList());
+    }
 
 	@Override
 	public String toString() {

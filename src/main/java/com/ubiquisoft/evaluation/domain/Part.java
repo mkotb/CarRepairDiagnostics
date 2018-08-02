@@ -7,13 +7,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Part {
-
 	private String inventoryId;
-
 	private PartType type;
-
 	private ConditionType condition;
-
 
 	public boolean isInWorkingCondition() {
 		switch (this.condition) {
